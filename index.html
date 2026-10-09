@@ -27,6 +27,9 @@
     top.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})); return true; };
 })();
 </script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
@@ -2679,5 +2682,8 @@ async function boot(){
 }
 boot();
 })();
+</script>
+<script>/* appli installable : fonctionne aussi hors réseau (site https uniquement, pas en mode serveur) */
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!window.WMAndroid){ window.addEventListener('load',()=>{ fetch('sw.js',{method:'HEAD'}).then(r=>{ if(r.ok)navigator.serviceWorker.register('sw.js').catch(()=>{}); }).catch(()=>{}); }); }
 </script>
 </body></html>
