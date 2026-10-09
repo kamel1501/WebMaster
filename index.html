@@ -389,6 +389,7 @@ html.dv-open body{overflow:hidden}
 .stbl tr.paid td{background:rgba(11,107,88,.07)}
 .stbl tr.neg td{background:rgba(200,40,40,.08);color:var(--crit)}.stbl tr.neg td b,.stbl tr.neg td small{color:var(--crit)}
 .lotcard.negl{border-color:var(--crit)!important;background:rgba(200,40,40,.05)}
+.ansug{background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px}.ansug[hidden]{display:none}.ansug-i{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;color:var(--ink);cursor:pointer}.ansug-i span{font-size:12.5px;color:var(--muted)}
 .bensug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:6;max-height:260px;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);margin:0}
 .bsec{margin:10px 0;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .bsec>summary{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;list-style:none;font-weight:600}
@@ -485,7 +486,7 @@ function cfgLines(){ const c=CFG; return [
 ].filter(Boolean); }
 let mode='loading', db=null, uid=null, canWrite=true, loaded=new Set();
 let view='accueil';
-const UI={benD1:'',benD2:'',achatQ:'',venteD1:'',venteD2:'',achatD1:'',achatD2:'',stockTab:'produits',stockQ:'',stockF:'tous',venteQ:'',venteF:'tous',achatF:'tous',tiers:'clients',tiersQ:''};
+const UI={benD1:'',benD2:'',achatQ:'',venteD1:'',venteD2:'',achatD1:'',achatD2:'',stockTab:'produits',stockQ:'',stockF:'tous',venteQ:'',venteF:'tous',achatF:'tous',tiers:'',tiersQ:''};
 
 /* ---------- stockage local (cet appareil) ---------- */
 const KEY='watson-gestion-v1';
@@ -638,7 +639,7 @@ function navHTML(full){return VIEWS.map(([k,l,s])=>`<button data-go="${k}" ${vie
 function renderNav(){ $('#sideNav').innerHTML=navHTML(true); $('#tabNav').innerHTML=navHTML(false); }
 function applyCfg(){ const n=CFG.nom||'Société non renseignée'; $('#brandName').textContent=n; $('#brandName2').textContent=n; }
 function setMode(){ const l=mode==='server'?(SRV.user?`${SRV.user.nom} · ${SRV.user.roleNom} · serveur`:'Serveur · non connecté'):mode==='db'?(canWrite?'Données partagées · en ligne':'Lecture seule'):mode==='memory'?'Données sur cet appareil':'Connexion…'; $('#sideFoot').textContent=l; }
-function go(v){ view=v; renderNav(); renderView(); window.scrollTo(0,0); }
+function go(v){ if(v==='tiers'&&view!=='tiers'){UI.tiers='';UI.tiersQ='';} view=v; renderNav(); renderView(); window.scrollTo(0,0); }
 
 function renderView(){
   const [k,title]=VIEWS.find(x=>x[0]===view);
@@ -646,10 +647,10 @@ function renderView(){
   const add=(act,label)=>canWrite&&can({newVente:'vente',newAchat:'achat',newTiers:'tiers',newProduit:'stock'}[act]||'vente')?`<button class="btn primary" data-act="${act}">${label}</button>`:'';
   const sub={accueil:new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),stock:'Produits, lots et dates de péremption',ventes:'Factures clients et encaissements',achats:'Bons de commande et réceptions fournisseurs',tiers:'Pharmacies clientes et laboratoires fournisseurs'}[k];
   let right=k==='accueil'?`<button class="btn" data-act="excel">Exporter en Excel</button>`:'';
-  if(k==='stock'){ right=add('newAchat','+ Achat'); tools=`<div class="tools"><div class="seg" style="width:100%;display:flex">${[['produits','Produits'],['lots','Lots']].map(([k2,l])=>`<button data-stab="${k2}" aria-pressed="${UI.stockTab===k2}" style="flex:1">${l}</button>`).join('')}</div><input class="search" id="q" placeholder="${UI.stockTab==='lots'?'Produit ou n° de lot…':'Produit, DCI, code, labo, n° d\'enregistrement…'}" value="${esc(UI.stockQ)}"><div class="chips">${chip('stockF','tous','Tous')}${chip('stockF','seuil','Sous le seuil')}${chip('stockF','exp','Péremption < 6 mois')}${chip('stockF','reg','Enregistrement à vérifier')}</div>${UI.stockTab==='lots'?`<div class="xbar"><button class="dbtn" data-act="lotsPdf">⇧ PDF lot</button><button class="dbtn" data-act="ugvExport">⇧ Exporter Excel UG vente</button>${canWrite?'<button class="dbtn" data-act="ugvImport">⇩ Importer UGV</button>':''}</div>`:''}</div>`; }
+  if(k==='stock'){ right=add('newAchat','+ Achat'); tools=`<div class="tools"><div class="seg" style="width:100%;display:flex">${[['produits','Produits'],['lots','Lots']].map(([k2,l])=>`<button data-stab="${k2}" aria-pressed="${UI.stockTab===k2}" style="flex:1">${l}</button>`).join('')}</div><input class="search" id="q" placeholder="${UI.stockTab==='lots'?'Produit ou n° de lot…':'Produit, DCI, code, labo, n° d\'enregistrement…'}" value="${esc(UI.stockQ)}"><div class="chips">${chip('stockF','tous','Tous')}${chip('stockF','seuil','Sous le seuil')}${chip('stockF','exp','Péremption < 6 mois')}${chip('stockF','reg','Enregistrement à vérifier')}</div>${UI.stockTab==='lots'?`<div class="xbar"><button class="dbtn" data-act="lotsPdf">⇧ PDF lot</button><button class="dbtn" data-act="ugvExport">⇧ Exporter Excel UG vente</button>${canWrite?'<button class="dbtn" data-act="ugvImport">⇩ Importer UGV</button>':''}</div>`:`<div class="muted" style="font-size:12.5px;margin:2px 0 6px">Listing des produits disponibles (DDP · UGV)</div><div class="docbar2"><button class="dact dv" data-act="lotsPdf"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Visualiser</button><details class="dmenu dd"><summary><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>Télécharger</summary><div class="dm"><button data-act="listPdfDl">Listing · PDF</button><button data-act="listXls">Listing · Excel</button></div></details><button class="dact ds" data-act="listSend"><svg viewBox="0 0 24 24"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7z"/></svg>Envoyer</button></div>`}</div>`; }
   if(k==='ventes'){ right=add('newVente','+ Facture'); tools=`<div class="tools"><input class="search" id="q" placeholder="N° de facture ou client…" value="${esc(UI.venteQ)}">${periodBar('vente')}<div class="chips">${chip('venteF','tous','Toutes')}${chip('venteF','dues','À encaisser')}${chip('venteF','payees','Payées')}</div></div>`; }
   if(k==='achats'){ right=canWrite&&can('achat')?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="importAchat">Importer une facture</button><button class="btn primary" data-act="newAchat">+ Achat</button></div>`:''; tools=`<div class="tools"><input class="search" id="q" placeholder="N° de facture ou fournisseur…" value="${esc(UI.achatQ)}">${periodBar('achat')}<div class="chips">${chip('achatF','tous','Toutes')}${chip('achatF','commande','En attente')}${chip('achatF','recu','Reçues')}${chip('achatF','avr','Rétrocessions à percevoir')}</div></div>`; }
-  if(k==='tiers'){ right=canWrite&&can('tiers')?`<button class="btn primary" data-act="newTiers">+ ${UI.tiers==='clients'?'Client':'Fournisseur'}</button>`:''; tools=`<div class="tools"><div class="seg"><button data-seg="clients" aria-pressed="${UI.tiers==='clients'}">Clients</button><button data-seg="fournisseurs" aria-pressed="${UI.tiers==='fournisseurs'}">Fournisseurs</button></div><input class="search" id="q" placeholder="Rechercher…" value="${esc(UI.tiersQ)}"></div>`; }
+  if(k==='tiers'){ right=UI.tiers&&canWrite&&can('tiers')?`<div style="display:flex;gap:8px;flex-wrap:wrap">${UI.tiers==='clients'?'<button class="btn" data-act="annuaire">Annuaire</button>':''}<button class="btn primary" data-act="newTiers">+ ${UI.tiers==='clients'?'Client':'Fournisseur'}</button></div>`:''; tools=`<div class="tools"><div class="seg"><button data-seg="clients" aria-pressed="${UI.tiers==='clients'}">Clients</button><button data-seg="fournisseurs" aria-pressed="${UI.tiers==='fournisseurs'}">Fournisseurs</button></div>${UI.tiers?`<input class="search" id="q" placeholder="Rechercher…" value="${esc(UI.tiersQ)}">`:''}</div>`; }
   $('#main').innerHTML=`<div id="banner"></div><div class="head"><div><h1>${title}</h1><p>${sub}</p></div>${right}</div>${tools}<div id="content"></div>`;
   const pb=$('.period'); if(pb)wirePeriod(pb,renderContent);
   const q=$('#q'); if(q) q.addEventListener('input',e=>{ const key={stock:'stockQ',ventes:'venteQ',achats:'achatQ',tiers:'tiersQ'}[view]; UI[key]=e.target.value; renderContent(); });
@@ -701,7 +702,7 @@ function recuHTML(R){
   const cli=byId('clients',R.clientId)||{nom:R.clientNom};
   return `<div class="d-page"><div class="d-top"><div><div class="d-co">${esc(CFG.nom||'')}</div><div class="d-mut">${cfgLines().map(esc).join('<br>')}</div></div>
     <div class="d-r"><div class="d-title">REÇU DE PAIEMENT</div><div class="d-num">N° ${esc(R.recu)}</div><div class="d-mut">Date : ${frDate(R.date)}</div></div></div>
-    <div class="d-cli"><div class="d-lbl">REÇU DE</div><b>${esc(cli.nom||'')}</b>${cli.adresse?'<br>'+esc(cli.adresse):''}${cli.wilaya?'<br>'+esc(cli.wilaya):''}${cli.tel?'<br>Tél. '+esc(cli.tel):''}</div>
+    <div class="d-cli"><div class="d-lbl">REÇU DE</div><b>${esc(cli.nom||'')}</b>${cliLines(cli).map(x=>'<br>'+esc(x)).join('')}</div>
     <div class="d-rc"><div><span>Date</span><b>${frDate(R.date)}</b></div><div><span>Montant payé</span><b>${DA(R.total)}</b></div><div><span>Mode</span><b>${esc(R.mode||'—')}${R.ref?' · '+esc(R.ref):''}</b></div></div>
     <table class="d-t"><thead><tr><th>N° facture payée</th><th>Date facture</th><th class="r">Montant facture</th><th class="r">Montant payé</th></tr></thead><tbody>
       ${R.lines.map(l=>`<tr><td>${esc(l.v.numero)}</td><td>${frDate(l.v.date)}</td><td class="r">${nf.format(l.v.ttc)}</td><td class="r"><b>${nf.format(l.montant)}</b></td></tr>`).join('')}</tbody></table>
@@ -817,7 +818,7 @@ function recuPDF(R,isF){
   P.text(Rr,y+14,isF?'PAIEMENT FOURNISSEUR':'REÇU DE PAIEMENT',{size:16,bold:true,align:'right'});
   P.text(Rr,y+30,'N° '+R.recu,{size:10,bold:true,align:'right'}); P.text(Rr,y+43,'Date : '+frDate(R.date),{size:8.5,align:'right',color:MUT});
   y+=Math.max(70,36+info.length*11);
-  const bx=P.W/2, bw=Rr-bx, ls=[t.adresse,t.wilaya||t.ville,t.tel&&'Tél. '+t.tel].filter(Boolean), bh=34+ls.length*11;
+  const bx=P.W/2, bw=Rr-bx, ls=cliLines(t).flatMap(x=>P.wrap(x,bw-20,8.5)), bh=34+ls.length*11;
   P.rect(bx,y,bw,bh,null,[.75,.8,.78]); P.text(bx+10,y+14,isF?'PAYÉ À':'REÇU DE',{size:7.5,bold:true,color:MUT}); P.text(bx+10,y+27,t.nom||'',{size:10.5,bold:true}); ls.forEach((x,i)=>P.text(bx+10,y+40+i*11,x,{size:8.5}));
   y+=bh+16;
   const cw=(Rr-M)/3; [['DATE',frDate(R.date)],['MONTANT PAYÉ',money(R.total)+' DA'],['MODE',(R.mode||'-')+(R.ref?' · '+R.ref:'')]].forEach(([k,v],i)=>{ const x=M+i*cw; P.rect(x,y,cw,38,null,[.75,.8,.78]); P.text(x+9,y+13,k,{size:7,color:MUT,bold:true}); P.text(x+9,y+29,v,{size:11,bold:true}); });
@@ -988,12 +989,13 @@ function vAchats(){
   return avrBox+`<div class="card stbl lt"><table><thead><tr><th>Date</th><th>Fournisseur</th><th>N° facture</th><th class="r">Montant</th></tr></thead><tbody>${list.map(a=>`<tr data-open="achat:${a.id}"${a.statut!=='recu'?' class="due"':''}><td>${frDate(a.date)}</td><td>${esc(a.fournisseurNom||'')}</td><td class="mono">${esc(a.refFournisseur||a.numero)}</td><td class="r num">${nf.format(netA(a))}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">Aucun achat ne correspond.</td></tr>'}</tbody>${list.length?`<tfoot><tr><td colspan="3">${list.length} facture${list.length>1?'s':''}</td><td class="r num">${nf.format(totN)}</td></tr></tfoot>`:''}</table></div><p class="muted" style="font-size:12.5px;margin-top:8px">Montant = net à payer réel (après AVR et AVF) · n° de la facture fournisseur · trait orange : marchandise en attente.</p>`;
 }
 function vTiers(){
+  if(!UI.tiers) return `<div class="card empty"><h3>Clients et fournisseurs</h3><p>Touchez <b>Clients</b> ou <b>Fournisseurs</b> ci-dessus pour afficher la liste.</p><p class="muted" style="font-size:13px;margin:6px 0 0">${S.clients.length} client${S.clients.length>1?'s':''} · ${S.fournisseurs.length} fournisseur${S.fournisseurs.length>1?'s':''}</p></div>`;
   const isC=UI.tiers==='clients', col=S[UI.tiers], q=UI.tiersQ.trim().toLowerCase();
-  if(!col.length) return `<div class="card empty"><h3>Aucun ${isC?'client':'fournisseur'}</h3>${canWrite?`<div class="acts"><button class="btn primary" data-act="newTiers">Ajouter</button></div>`:''}</div>`;
-  const list=col.filter(t=>!q||[t.nom,t.wilaya,t.ville,t.tel,t.secteur,t.nif,t.rc].join(' ').toLowerCase().includes(q)).sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+  if(!col.length) return `<div class="card empty"><h3>Aucun ${isC?'client':'fournisseur'}</h3>${canWrite?`<div class="acts">${isC?'<button class="btn" data-act="annuaire">Importer depuis l\'annuaire</button>':''}<button class="btn primary" data-act="newTiers">Ajouter</button></div>`:''}</div>`;
+  const list=col.filter(t=>!q||[t.nom,t.wilaya,t.commune,t.ville,t.tel,t.mobile,t.email,t.secteur,t.nif,t.rc].join(' ').toLowerCase().includes(q)).sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
   return `<div class="card"><ul class="rows">${list.map(t=>{
     if(isC){const vs=S.ventes.filter(v=>v.clientId===t.id);const r=vs.reduce((a,v)=>a+Math.max(0,reste(v)),0);const ca=vs.reduce((a,v)=>a+v.ttc,0);
-      return `<li class="row" data-open="client:${t.id}"><div class="m"><div class="t">${esc(t.nom)}</div><div class="s">${esc(t.wilaya||'')}${t.secteur?' · '+esc(t.secteur):''}${t.tel?' · '+esc(t.tel):''} · CA ${DAk(ca)}</div></div><div class="e">${r>0.009?`<span class="num">${DA(r)}</span><span class="pill p-warn">Dû</span>`:'<span class="pill p-ok">À jour</span>'}</div></li>`;}
+      return `<li class="row" data-open="client:${t.id}"><div class="m"><div class="t">${esc(t.nom)}</div><div class="s">${esc(cliLoc(t))}${t.secteur?' · '+esc(t.secteur):''}${t.tel||t.mobile?' · '+esc(t.mobile||t.tel):''} · CA ${DAk(ca)}</div></div><div class="e">${r>0.009?`<span class="num">${DA(r)}</span><span class="pill p-warn">Dû</span>`:'<span class="pill p-ok">À jour</span>'}</div></li>`;}
     const as=S.achats.filter(a=>a.fournisseurId===t.id);
     return `<li class="row" data-open="fournisseur:${t.id}"><div class="m"><div class="t">${esc(t.nom)}</div><div class="s">${esc(t.ville||'')}${t.tel?' · '+esc(t.tel):''}</div></div><div class="e"><span class="num">${as.length} cde${as.length>1?'s':''}</span></div></li>`;
   }).join('')||'<li class="empty">Aucun résultat.</li>'}</ul></div>`;
@@ -1203,6 +1205,48 @@ function produitModal(p){
 }
 
 /* tiers */
+/* annuaire des distributeurs (PP + DM) : [raison sociale, wilaya, commune, adresse, tél. fixe, mobile, e-mail] */
+const ANNUAIRE=[["EURL ACHOUAK MEDIC","Constantine","El Khroub","","","0770 33 74 62",""],["EURL AIDI PHARM","Mila","Oued Athmania","Zone d'activité","","0660 20 82 40",""],["EURL ALPHA PHARM","Annaba","El Bouni","CENTRE VILLE","","0555 99 47 00",""],["EURL AMROUNE PHARM","M'Sila","M'Sila","Echbilia","","0661 32 31 30",""],["EURL AT MEDIC","Chlef","Chlef","","","0770 16 68 06 / 0550 65 07 95 / 0770 16 78 73",""],["EURL BELSM MEDIC","Batna","Batna","","","",""],["EURL BENHARRAT PHARM","Sidi Bel Abbès","Sidi Bel Abbès","Rue Kaab Ibn Malek","","0558 93 60 78","benharathparapharm@gmail.com"],["EURL BOUNA PHARM","Annaba","Annaba","","038 86 79 74","",""],["EURL BOURRICHE PHARM","Skikda","Ramdane Djamel","Siège social","","0670 18 77 28",""],["EURL CHAKIB PHARM","Oran","Sidi Chahmi / Bir El Djir","Lot N°166 plan A, section 09 îlot 41, Sidi Chahmi","","0560 63 59 44 / 0699 26 60 69",""],["EURL COPHAR EST","Constantine","El Khroub","1 CITE EL MANAR LOT BENTARCHA","","0550 37 88 41",""],["EURL FAIZA KHANNANE PHARM","Alger","Bordj El Kiffan","Rue Colonel Amirouche","","0774 69 26 85",""],["EURL FETTAH PHARM","Sidi Bel Abbès","Sidi Bel Abbès","","","",""],["EURL HOUSSAM PHARM","Alger","Ouled Fayet","ROUTE BOUCHAOUI N°06 GRP 496 ILOT 01","021 95 82 10","0560 57 47 83","houssampharm@live.fr"],["EURL INFINITY MED","Naâma","Mecheria","","","",""],["EURL MERCY HEALTH PHARM","","","Îlot 24 section 6","","0560 07 14 19","azdpharmacie@hotmail.com"],["EURL MIR PHARM","Constantine","Constantine","","031 69 22 33","",""],["EURL NATIONAL PHARM","Boumerdès","Boumerdes","CITE ALLILIGUIA","","0550 74 61 67","nationalpharm35dg@gmail.com"],["EURL NOUH PHARM","Constantine","Aïn El Bey","5 Aïn El Bey","","0660 69 73 77",""],["EURL PHARM EMINENCE","Constantine","Ali Mendjeli","68 Z.A.","031 74 11 53 / 031 74 11 54","0560 13 71 77 / 0560 13 71 79 / 0560 13 71 74","pharmeminence@gmail.com"],["EURL PHARMALIFT","Oran","Oran","12 rue Hamlaoui AEK","","",""],["EURL PHARMATHENA","Mostaganem","Stidia","","","0553 12 73 02",""],["EURL SAOULI BUSINESS PHARMA","Sétif","Sétif","Lot n°302 groupe 33 section 4","","0770 07 25 46","contact@saoulibusinesspharma.com"],["EURL SDPS","Chlef","Chlef","Zone d'activité Ouled Mohamed","","","eurl.sdps@hotmail.com"],["EURL THEVEST PHARM","Tébessa","Tébessa","","037 49 12 15","","thevestpharm@yahoo.fr"],["EURL TIMLOUKA PHARM","Sétif","Setif","CITE DU 20 AOUT 1955 48 LOGTS LSP","044 78 31 20","0561 60 65 60","contact@timloukapharm.com / timloukaali@yahoo.fr"],["SARL ABDENOUR PHARM","Annaba","Annaba","Lot 442 N°02, lot El Kharouba","","0770 89 50 15",""],["SARL ACS MED","Constantine","El Khroub","LOT. MASSINISSA SECTION 96","","0553 78 81 23 / 0770 55 88 84","contact.acsmed@gmail.com"],["SARL ALGERIANNE BUSINESS MEDICAL ABM ALGER","Alger","Birtouta","LOT 7 GPE 56 BABA ALI","","0770 70 40 19 / 0770 16 35 67","contact@abmpharm.net"],["SARL AZ VITA PHARM","Bordj Bou Arreridj","Bordj Bou Arreridj","","","",""],["SARL BAK MEDIC","Skikda","Hamadi Krouma","Lot 29, zone de dépôt Hamrouche Hamoudi","","0794 31 06 94",""],["SARL BASMA PHARM","Alger","Sidi Moussa","","021 35 57 69","0770 80 31 04 / 0770 80 31 50","basmapharm@gmail.com"],["SARL BCD PHARMA","Alger","Bordj El Kiffan","","","0560 65 64 49","bcd.pharma@gmail.com"],["SARL BETA CARE","Alger","Ouled Fayet","Plateau section 10, route Meziani n°29","","0560 52 85 83","al.nahnah@beatcare-dz.com"],["SARL BIG DIS","Constantine","Didouche Mourad","Zone industrielle","031 90 50 11","","contact@big-dis.com / dg@big-dis.com"],["SARL BIO MF","Alger","Khraicia","","","",""],["SARL BIOCELL PHARM","Constantine","El Khroub","CARREFOUR DES QUATRE CHEMINS AIN EL-BEY LOT 483","","0770 10 69 93 / 0770 98 47 05","biocellpharm25@gmail.com"],["SARL BIOMEDIC PHARM","Constantine","Constantine","Cité Filali BT C N°1","031 92 78 54","","biomedicpharm@yahoo.com"],["SARL BIOSANO","Blida","Beni Tamou","","025 31 87 61","",""],["SARL BOUKHEMIS MED","Constantine","Hamma Bouziane","CITE BEKIRA LOTS Z.A.C. N 114 ET 115","","0550 58 13 50","sarlboukhemismed@gmail.com"],["SARL BT PHARM","Constantine","El Khroub","Gr 117, Lot Massinissa sec 96","","",""],["SARL CELLULOPLAST PRODUCTION","Alger","Cheraga","87 CITE BEN HADDADI SAID","023 21 77 59","","contact@celluloplast.com"],["SARL CHARK PHARM","Batna","Kechida","Z.I.","033 22 34 01 / 033 22 34 02 / 033 22 34 03","0560 99 94 44 / 0550 41 82 55 / 0550 45 93 94","charkpharm@hotmail.fr / charkpharm@yahoo.fr"],["SARL CHER MEDIC","Constantine","Ali Mendjeli","Z.A. AIN EL BAY, 204 B. NOUVELLE VILLE","","0770 74 85 37","contact@chermedic.com"],["SARL CIPHACO","","","","","","sarl_ciphaco@yahoo.fr"],["SARL CT PHARMA","Alger","Gué de Constantine","","","0661 70 91 38",""],["SARL CURATIVA MEDIC","Constantine","Constantine","","","0555 51 98 10","curativa.commercial@gmail.com"],["SARL DAR PHARM","Alger","Baraki","","","","darpharm.dz@gmail.com"],["SARL DIPROPHARM","Aïn Defla","Aïn Defla","Rue des Martyrs, Bouhlol","","0770 53 34 38 / 0770 81 58 75",""],["SARL DIRECT PHARMA","Constantine","Constantine","27 Z.I. PALMA","","0555 57 25 11","ouided.ghachi@directpharmadz.com"],["SARL DJEN DJEN PHARM","Jijel","Taher","RUE TASSIFT","034 59 46 49","0770 35 99 11","djendjenpharm@gmail.com / djendjenpharm.dt@gmail.com"],["SARL DRICI PHARM","Bordj Bou Arreridj","Bordj Bou Arreridj","85 RUE BR CITE 517","","0541 28 54 01","sarlpharmdrici@gmail.com"],["SARL EL BIBANE MEDIC","Bordj Bou Arreridj","Bordj Bou Arreridj","","","0770 12 23 05",""],["SARL EMIR PHARMA","Alger","Cheraga","16 CITE KAOUCHE","021 36 96 88 / 021 36 31 42 / 021 36 96 48","0661 53 32 66 / 0557 54 16 48","emir_pharmaceutique@yahoo.fr"],["SARL ETHICARE","Alger","Birtouta","","","","ethic.job@gmail.com"],["SARL GB SANTE SETIF","Sétif","Sétif","Villas Merouani / 56 section 208","","",""],["SARL GENERALE PHARMACIE SKIKDA GPSK","Skikda","Skikda","RUE DU CHATEAU D'EAU","038 76 58 62 / 038 75 43 13 / 038 75 43 28","0560 08 47 53 / 0560 94 44 52","commercial@gpsk-dz.com / asma.kafi@gpsk-dz.com"],["SARL HEXAPHARM","Tiaret","Tiaret","","","",""],["SARL KR DISTRIMED","Alger","Dely Ibrahim / Oued Smar","","023 78 77 72 / 023 93 03 68","",""],["SARL MEDIKAB PHARM","Aïn Defla","Aïn Defla","","","0550 40 61 07",""],["SARL METIDJA SANTE","Blida","Beni Mered","","025 35 42 01","",""],["SARL MILLENNIUM MEDIC","Annaba","El Bouni","69 Lotissement Cheikh Tahar","038 48 50 27","0560 09 08 40",""],["SARL MKM PHARM","Alger","Khraicia","","","",""],["SARL NOBLE MEDIC","Oran","Oran","Rue Tahar Salem Benkadour (ex Hérédéa)","","","noble.medic.recrutement@gmail.com"],["SARL NOUR MEDIC","","","Cité Voussoirs CNEP n°29","","","nourmedic.commercial@gmail.com"],["SARL OBM PHARM","Constantine","El Khroub","LOTISSEMENT CARREFOUR ZONE AIN EL BEY N 076, NOUVELLE VILLE","","0782 19 54 15","obmpharm@gmail.com"],["SARL OCEAN PHARM","","","","","0661 30 01 38",""],["SARL OPTIMAL PHARM","Constantine","El Khroub","","","",""],["SARL PHAREACT","Tizi Ouzou","Draâ El Mizan","Route de Draâ El Mizan","026 13 22 07","",""],["SARL PHARMA MEDIC","Chlef","Chlef","Z.A. OULED MOHAMED","027 77 59 10 / 027 77 20 22 / 027 77 63 05","0550 16 19 62","a.djalal@abpharmamedic.com"],["SARL PHARMA SPOT","Skikda","El Harrouch","","","0770 07 82 74",""],["SARL PHARMA WORLD","Constantine","El Khroub","","","0540 48 33 24",""],["SARL PHARMACTION","","","","","","pharmaction.achats@gmail.com"],["SARL PHARMAZUR","Constantine","El Khroub","UV05, Groupe 07, Local 04H","","0770 76 97 74",""],["SARL PME PHARM","Constantine","El Khroub","","","0770 89 87 13",""],["SARL RHL PHARMACEUTICAL","Alger","Rouiba","CITÉ BEN CHOUBAN LOCAL N° 269","","0556 54 46 46","rhl.pharmaceutical@gmail.com"],["SARL SAICAMED KHODJA ET CIE","Alger","Birkhadem","N°20 Zonka, Coopérative l'Amitié","","0770 07 30 14",""],["SARL SENOUSSAOUI PHARM","Sétif","Sétif","","","0560 99 26 58","achatspharm@senoussaouipharm.com"],["SARL SMAILI SANTE","Constantine","El Khroub","Lot 07 zone industrielle Ali Mendjeli","","0770 64 84 87",""],["SARL SOCIETE PHARMACEUTIQUE EL EMIR","Alger","Cheraga","16 CITE KAOUCHE","021 36 96 88 / 021 36 31 42 / 021 36 96 48","0661 53 32 66 / 0557 54 16 48","emir_pharmaceutique@yahoo.fr"],["SARL SOPHAC","Béjaïa","Bejaia","24 CH. DES CRETES","034 10 70 58 / 034 10 70 50","0555 03 64 72 / 0555 03 64 87 / 0555 01 45 56","sarlsophac@gmail.com"],["SARL TECHNIC LAB ANNABA","M'Sila","M'Sila","CITE 100 LOGTS POLE","","0770 59 39 05 / 0540 27 56 81","cm@techniclab-dz.com"],["SARL TECHNIC LAB NORD","M'Sila","M'Sila","CITE 100 LOGTS POLE","","0770 59 39 05 / 0540 27 56 81","cm@techniclab-dz.com"],["SARL VECERA MED","Constantine","Ben Badis","Z.I. ET TARF N 16 LOCAL B","","0770 18 04 27","achatveceramed25@gmail.com / skanderzaimeche@gmail.com"],["SARL YAZAN PHARM","Constantine","Constantine","","","0770 91 07 87",""],["SARL YOUGARA PHARM","Constantine","Constantine","","031 90 33 64","0770 25 98 34 / 0770 97 58 76","yougarapharma25000@gmail.com"],["SARL YOUR PHARMA","Sétif","Sétif","Près mosquée Al Abbas Bnou Abd El Moutalib","","0550 56 63 40",""],["SARL YOUSRA PHARM","Constantine","El Khroub","","","0540 42 06 66",""],["SARL ZENITH PHARM","Constantine","Ain El Bey","5 CITE DES 100 CHALETS FRERES FERRAD","031 93 08 15 / 031 93 07 54","0770 83 00 72 / 0770 97 58 76","zenithpharm25000@gmail.com"],["SARL ZITOUNI","Constantine","Ain El Bey","CITE DES PALMIERS","031 81 80 77 / 031 81 80 84 / 031 81 82 04","0661 92 69 64",""],["SNC BELHOUCHET MALEK PHARM","Annaba","Annaba","CITE 102 LOGTS BT 5 PROMOTION IMMOBILIERE EPLF, CITE DIDOUCHE MOURAD","038 48 52 82","0555 01 01 39","malekweb23@hotmail.com"],["SNC VIDAL HIMOURA AND ASSOCIES","Constantine","Constantine Gare","827 CITE DJEBEL EL OUAHCHE","031 61 94 98 / 031 61 95 08","","meriem.vidal@gmail.com"]];
+const annObj=r=>({nom:r[0],wilaya:r[1],commune:r[2],adresse:r[3],tel:r[4],mobile:r[5],email:r[6]});
+const cliLoc=c=>{ const a=(c.commune||'').trim(), b=(c.wilaya||c.ville||'').trim(); return a&&b&&norm(a)!==norm(b)?a+', '+b:(a||b); };
+function cliLines(c){ return [c.adresse,cliLoc(c),c.tel&&'Tél. '+c.tel,c.mobile&&'Mob. '+c.mobile].filter(Boolean); }
+function annSearch(q,n=6){ q=norm(q).trim(); if(q.length<2)return []; const w=q.split(/\s+/); return ANNUAIRE.filter(r=>{ const h=norm(r.join(' ')); return w.every(x=>h.includes(x)); }).slice(0,n); }
+function annuaireModal(){
+  const have=new Map(S.clients.map(c=>[norm(c.nom).replace(/\s+/g,' ').trim(),c]));
+  const st=r=>have.get(norm(r[0]).replace(/\s+/g,' ').trim());
+  let q='';
+  openModal(`<div class="sh"><h2>Annuaire des distributeurs</h2>${closeBtn}</div>
+  <p class="muted" style="font-size:13.5px;margin:0 0 10px">${ANNUAIRE.length} établissements avec leurs coordonnées. Cochez ceux à ajouter à vos clients. Ceux déjà présents sont complétés (seules les coordonnées manquantes sont ajoutées).</p>
+  <input class="search" name="annq" placeholder="Nom, wilaya, commune…" style="margin-bottom:8px">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button class="btn sm" data-ann="all">Tout cocher</button><button class="btn sm" data-ann="none">Tout décocher</button></div>
+  <div class="card" style="max-height:52vh;overflow:auto;padding:0"><ul class="rows" id="annlist"></ul></div>
+  <div class="err"></div>
+  <div class="acts"><button class="btn" data-close>Fermer</button><button class="btn primary" data-annok>Importer</button></div>`,
+  s=>{
+    const sel=new Set(ANNUAIRE.map((r,i)=>st(r)?null:i).filter(i=>i!=null));
+    const match=r=>{ const w=norm(q).trim().split(/\s+/).filter(Boolean); return !w.length||w.every(x=>norm(r.join(' ')).includes(x)); };
+    const cnt=()=>{ $('[data-annok]',s).textContent=`Importer (${sel.size})`; };
+    const draw=()=>{
+      $('#annlist',s).innerHTML=ANNUAIRE.map((r,i)=>[r,i]).filter(([r])=>match(r)).map(([r,i])=>{ const ex=st(r);
+        return `<li class="row"><label style="display:flex;gap:10px;align-items:flex-start;width:100%;cursor:pointer"><input type="checkbox" data-ai="${i}" ${sel.has(i)?'checked':''} style="margin-top:4px;width:18px;height:18px;flex:none"><div class="m"><div class="t">${esc(r[0])}${ex?' <span class="pill p-ok">déjà client</span>':''}</div><div class="s">${esc(cliLoc(annObj(r))||'Wilaya non précisée')}${r[4]||r[5]?' · '+esc(r[5]||r[4]):''}</div></div></label></li>`; }).join('')||'<li class="empty">Aucun résultat.</li>';
+      cnt(); };
+    draw();
+    $('[name=annq]',s).addEventListener('input',e=>{q=e.target.value;draw();});
+    s.addEventListener('change',e=>{ const c=e.target.closest('[data-ai]'); if(!c)return; const i=+c.dataset.ai; c.checked?sel.add(i):sel.delete(i); cnt(); });
+    s.addEventListener('click',async e=>{
+      const b=e.target.closest('[data-ann]'); if(b){ ANNUAIRE.forEach((r,i)=>{ if(!match(r))return; b.dataset.ann==='all'?sel.add(i):sel.delete(i); }); draw(); return; }
+      if(!e.target.closest('[data-annok]'))return;
+      if(!sel.size){ $('.err',s).textContent='Cochez au moins un établissement.'; return; }
+      let add=0,upd=0; api.begin();
+      try{
+        for(const i of [...sel].sort((a,b)=>a-b)){ const o=annObj(ANNUAIRE[i]), ex=st(ANNUAIRE[i]);
+          if(ex){ const d={}; ['wilaya','commune','adresse','tel','mobile','email'].forEach(k=>{ if(!ex[k]&&o[k])d[k]=o[k]; }); if(Object.keys(d).length){ await api.update('clients',ex.id,d); upd++; } }
+          else { await api.add('clients',{...o,nif:'',rc:'',nis:'',ai:'',secteur:''}); add++; } }
+        await api.commit(); closeModal(); toast(`${add} client${add>1?'s':''} ajouté${add>1?'s':''}${upd?`, ${upd} complété${upd>1?'s':''}`:''}`);
+      }catch(err){ api.abort(); fail(s,err); }
+    });
+  });
+}
 function tiersModal(kind,t){
   const isNew=!t, isC=kind==='clients'; t=t||{}; const ro=!canWrite;
   let extra='';
@@ -1210,16 +1254,22 @@ function tiersModal(kind,t){
     extra=`<div class="card" style="margin-top:16px"><h2>Factures <small class="num">reste dû ${DA(r)}</small></h2><ul class="rows">${vs.slice(0,8).map(venteRow).join('')||'<li class="empty">Aucune facture.</li>'}</ul></div>`; }
   openModal(`<div class="sh"><h2>${isNew?(isC?'Nouveau client':'Nouveau fournisseur'):esc(t.nom)}</h2>${closeBtn}</div>
   <div class="form">${field('nom',isC?'Raison sociale (ex. Pharmacie …)':'Raison sociale',t.nom,'text','full')}
-  ${isC?field('wilaya','Wilaya',t.wilaya):field('ville','Ville',t.ville)}${field('tel','Téléphone',t.tel,'tel')}
-  ${field('adresse','Adresse',t.adresse,'text','full')}</div>
+  ${isC?`<div class="ansug full" hidden></div>${field('wilaya','Wilaya',t.wilaya)}${field('commune','Commune',t.commune)}${field('adresse','Adresse',t.adresse,'text','full')}${field('tel','Téléphone fixe',t.tel,'tel')}${field('mobile','Téléphone mobile',t.mobile,'tel')}${field('email','E-mail',t.email,'email','full')}`
+    :field('ville','Ville',t.ville)+field('tel','Téléphone',t.tel,'tel')+field('adresse','Adresse',t.adresse,'text','full')}</div>
   <h3 class="sec">Coordonnées fiscales</h3>
   <div class="form">${field('rc','R.C',t.rc)}${field('nif','NIF',t.nif)}${field('nis','NIS',t.nis)}${field('ai','NA (N° d\'article)',t.ai)}
   ${isC?field('secteur','Secteur (tournée de livraison)',t.secteur,'text','full'):field('activite','Activité',t.activite,'text','full')+field('capital','Capital social (DA)',t.capital)+field('plafondUG','Plafond UG en remise sur facture (%)',t.plafondUG||'','number')+'<p class="muted full" style="font-size:12.5px;margin:0">Au-delà de ce plafond, l\'excédent d\'UG est reversé par le fournisseur en AVR (avoir). Laissez vide s\'il n\'y a pas de plafond.</p>'}</div><div class="err"></div>
   <div class="acts">${!isNew&&!ro?`<button class="btn danger" data-confirm="del">Supprimer</button>`:''}<button class="btn" data-close>Fermer</button>${ro?'':'<button class="btn primary" data-save>Enregistrer</button>'}</div>${extra}`,
   s=>{
+    if(isC&&!ro){ const box=$('.ansug',s), inp=$('[name=nom]',s);
+      const show=()=>{ const L=annSearch(inp.value).filter(r=>norm(r[0])!==norm(inp.value)); box.hidden=!L.length;
+        box.innerHTML=L.length?'<div class="muted" style="font-size:12px">Dans l\'annuaire — touchez pour remplir les coordonnées :</div>'+L.map(r=>`<button type="button" class="ansug-i" data-an="${ANNUAIRE.indexOf(r)}"><b>${esc(r[0])}</b><span>${esc(cliLoc(annObj(r)))}${r[4]||r[5]?' · '+esc(r[5]||r[4]):''}</span></button>`).join(''):''; };
+      inp.addEventListener('input',show);
+      box.addEventListener('click',e=>{ const b=e.target.closest('[data-an]'); if(!b)return; const o=annObj(ANNUAIRE[+b.dataset.an]); inp.value=o.nom;
+        ['wilaya','commune','adresse','tel','mobile','email'].forEach(k=>{ const f=$(`[name=${k}]`,s); if(f&&!f.value.trim()&&o[k])f.value=o[k]; }); box.hidden=true; toast('Coordonnées remplies depuis l\'annuaire'); }); }
     s.addEventListener('click',async e=>{ if(!e.target.closest('[data-save]'))return;
       const d={nom:val(s,'nom'),tel:val(s,'tel'),adresse:val(s,'adresse'),nif:val(s,'nif'),rc:val(s,'rc'),nis:val(s,'nis'),ai:val(s,'ai')};
-      if(isC){d.wilaya=val(s,'wilaya');d.secteur=val(s,'secteur');if(t.remise)d.remise=t.remise;}else {d.ville=val(s,'ville');d.activite=val(s,'activite');d.capital=val(s,'capital');d.plafondUG=numv(s,'plafondUG')||0;}
+      if(isC){d.wilaya=val(s,'wilaya');d.commune=val(s,'commune');d.mobile=val(s,'mobile');d.email=val(s,'email');d.secteur=val(s,'secteur');if(t.remise)d.remise=t.remise;}else {d.ville=val(s,'ville');d.activite=val(s,'activite');d.capital=val(s,'capital');d.plafondUG=numv(s,'plafondUG')||0;}
       const sb=e.target.closest('[data-save]'); if(d.nif&&d.rc&&d.nif.replace(/\s/g,'')===d.rc.replace(/\s/g,'')&&!sb.dataset.ok){ $('.err',s).textContent='Attention : le NIF est identique au R.C. Vérifiez-le, puis touchez « Enregistrer quand même ».'; sb.dataset.ok='1'; sb.textContent='Enregistrer quand même'; return; }
       if(!d.nom){$('.err',s).textContent='Indiquez la raison sociale.';return;}
       if(t.demo)d.demo=true;
@@ -1718,7 +1768,7 @@ function docHTML(v,kind){
   const num=docNum(v,kind);
   const head=`<div class="d-top"><div><div class="d-co">${esc(CFG.nom||'')}</div><div class="d-mut">${cfgLines().map(esc).join('<br>')}</div></div>
     <div class="d-r"><div class="d-title">${K.t}</div><div class="d-num">N° ${esc(num)}</div><div class="d-mut">Date : ${frDate(v.date)}${kind!=='facture'?'<br>Réf. facture '+esc(v.numero):''}</div></div></div>
-    ${isDR?`<div class="d-qrrow"><div class="d-qr">${qrSVG(drQRText(v,cli),120)}</div>`:''}<div class="d-cli"><div class="d-lbl">${K.lbl}</div><b>${esc(cli.nom||'')}</b>${cli.adresse?'<br>'+esc(cli.adresse):''}${cli.wilaya?'<br>'+esc(cli.wilaya):''}${cli.tel?'<br>Tél. '+esc(cli.tel):''}${cliFisc(cli).length?`<table class="d-fisc">${cliFisc(cli).map(([k,x])=>`<tr><td>${k} client :</td><td>${esc(x)}</td></tr>`).join('')}</table>`:''}</div>${isDR?'</div>':''}`;
+    ${isDR?`<div class="d-qrrow"><div class="d-qr">${qrSVG(drQRText(v,cli),120)}</div>`:''}<div class="d-cli"><div class="d-lbl">${K.lbl}</div><b>${esc(cli.nom||'')}</b>${cliLines(cli).map(x=>'<br>'+esc(x)).join('')}${cliFisc(cli).length?`<table class="d-fisc">${cliFisc(cli).map(([k,x])=>`<tr><td>${k} client :</td><td>${esc(x)}</td></tr>`).join('')}</table>`:''}</div>${isDR?'</div>':''}`;
   const T=totaux(v.lignes); const g={}; v.lignes.forEach(l=>{if(l.tva)g[l.tva]=(g[l.tva]||0)+lineCalc(l).tv;});
   const table=isDR?`<div class="d-band">BON DE RETOUR MÉDICAMENTS</div><table class="d-t"><thead><tr><th>Désignation</th><th class="r">Qté</th><th class="r">P.U. HT</th><th class="r">Total HT</th></tr></thead><tbody>
       ${v.lignes.map(l=>`<tr><td>${esc(l.nom)}</td><td class="r">${ni.format(l.qte)}</td><td class="r">${nf.format(l.pu)}</td><td class="r">${nf.format(lineCalc(l).net)}</td></tr>`).join('')}</tbody></table>`
@@ -1898,7 +1948,7 @@ function facturePDF(v,kind){
     P.text(R,y+43,'Date : '+frDate(v.date)+(kind!=='facture'?'   ·   Réf. facture '+v.numero:''),{size:8.5,align:'right',color:MUT});
     y+=Math.max(70,36+info.length*11);
     if(first){
-      const bx=P.W/2, bw=R-bx, lines=[cli.adresse,cli.wilaya,cli.tel&&'Tél. '+cli.tel].filter(Boolean), fz=cliFisc(cli);
+      const bx=P.W/2, bw=R-bx, lines=cliLines(cli).flatMap(x=>P.wrap(x,bw-20,8.5)), fz=cliFisc(cli);
       const bh=34+lines.length*11+(fz.length?fz.length*11+4:0);
       P.rect(bx,y,bw,bh,null,[.75,.8,.78]);
       P.text(bx+10,y+14,K.lbl,{size:7.5,bold:true,color:MUT});
@@ -2012,14 +2062,106 @@ function exportExcel(){
      rows:Object.values(V.filter(v=>reste(v)>0.009).reduce((m,v)=>{const k=v.clientId;m[k]=m[k]||{n:v.clientNom,w:(byId('clients',k)||{}).wilaya||'',c:0,r:0,d:v.date};m[k].c++;m[k].r+=reste(v);if(v.date<m[k].d)m[k].d=v.date;return m;},{})).sort((a,b)=>b.r-a.r).map(o=>[o.n,o.w,o.c,round2(o.r),frDate(o.d),-daysTo(new Date(o.d))])},
     {name:'Achats',cols:[{h:'N°',w:15},{h:'Date',w:11},{h:'Fournisseur',w:26},{h:'N° facture fournisseur',w:18},{h:'Total HT',w:14,t:'m'},{h:'Net facture',w:14,t:'m'},{h:'AVR',w:12,t:'m'},{h:'AVR statut',w:14},{h:'AVF',w:14,t:'m'},{h:'Remise labo',w:12,t:'m'},{h:'Rétrocession',w:13,t:'m'},{h:'Rétro statut',w:14},{h:'Statut',w:12},{h:'Reçue le',w:11}],
      rows:[...S.achats].sort((a,b)=>(a.date+a.numero).localeCompare(b.date+b.numero)).map(a=>[a.numero,frDate(a.date),a.fournisseurNom,a.refFournisseur||'',a.total,a.netFacture||'',a.avr?a.avr.montant:'',a.avr?'Déduit au règlement':'',a.montantRemGros||'',a.montantRemLabo||'',a.retro?a.retro.montant:'',a.retro?(a.retro.statut==='recu'?'Perçue '+frDate(a.retro.recuLe):'À percevoir'):'',a.statut==='recu'?'Reçue':'En attente',a.recuLe?frDate(a.recuLe):''])},
-    {name:'Clients',cols:[{h:'Raison sociale',w:30},{h:'Wilaya',w:14},{h:'Adresse',w:32},{h:'Téléphone',w:14},{h:'R.C',w:20},{h:'NIF',w:20},{h:'NIS',w:18},{h:'NA',w:14},{h:'Secteur',w:22}],
-     rows:[...S.clients].sort((a,b)=>(a.nom||'').localeCompare(b.nom||'')).map(c=>[c.nom,c.wilaya,c.adresse,c.tel,c.rc,c.nif,c.nis,c.ai,c.secteur])}
+    {name:'Clients',cols:[{h:'Raison sociale',w:30},{h:'Wilaya',w:14},{h:'Commune',w:16},{h:'Adresse',w:32},{h:'Téléphone fixe',w:16},{h:'Téléphone mobile',w:16},{h:'E-mail',w:26},{h:'R.C',w:20},{h:'NIF',w:20},{h:'NIS',w:18},{h:'NA',w:14},{h:'Secteur',w:22}],
+     rows:[...S.clients].sort((a,b)=>(a.nom||'').localeCompare(b.nom||'')).map(c=>[c.nom,c.wilaya,c.commune||'',c.adresse,c.tel,c.mobile||'',c.email||'',c.rc,c.nif,c.nis,c.ai,c.secteur])}
   ];
   saveBlob(xlsx(sheets),'webmaster-export-'+today()+'.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',false);
 }
 
+function dispoRows(){ const R=[]; S.produits.slice().sort((a,b)=>(a.nom||'').localeCompare(b.nom||'')).forEach(p=>{ const L=(p.lots||[]).filter(l=>(+l.qte||0)>0).sort((a,b)=>(a.exp||'9999').localeCompare(b.exp||'9999')); if(L.length)R.push({p,l:L[0]}); }); return R; }
+function listXlsBlob(R){ return xlsx([{name:'Produits disponibles',cols:[{h:'Produit',w:46},{h:'DDP',w:12},{h:'UGV %',w:10,t:'n'}],rows:R.map(({p,l})=>[p.nom,l.exp?frDate(l.exp):'',+l.ugVente?ugSnap(+l.ugVente):''])}]); }
+function listPDF(R){
+  const P=makePDF(), M=40, Rr=P.W-M, ACC=[.043,.42,.345], MUT=[.36,.42,.4]; const cols=[['Produit',Rr-M-150,'l'],['DDP',75,'l'],['UGV',75,'r']]; let y=0, pg=0;
+  const head=()=>{ P.page(); pg++; y=M;
+    if(pg===1){ P.text(M,y+12,CFG.nom||'',{size:13,bold:true,color:ACC}); const info=cfgLines().slice(0,3).flatMap(x=>P.wrap(x,(Rr-M)*0.55,8)); info.forEach((x,i)=>P.text(M,y+26+i*10,x,{size:8,color:MUT}));
+      P.text(Rr,y+14,'PRODUITS DISPONIBLES',{size:15,bold:true,align:'right'}); P.text(Rr,y+29,'Date : '+frDate(today()),{size:9,align:'right',color:MUT}); y+=Math.max(58,34+info.length*10); }
+    else { P.text(M,y+10,(CFG.nom||'')+' · Produits disponibles (suite)',{size:9,bold:true,color:ACC}); y+=22; }
+    let x=M; P.rect(M,y,Rr-M,18,ACC); cols.forEach(([h,w,a])=>{P.text(a==='r'?x+w-5:x+5,y+12.5,h,{size:8.5,bold:true,color:[1,1,1],align:a==='r'?'right':'left'});x+=w;}); y+=18; };
+  head();
+  R.forEach(({p,l},i)=>{ const nm=P.wrap(p.nom||'',cols[0][1]-10,8.5), h=Math.max(18,nm.length*11+7); if(y+h>P.H-50)head();
+    if(i%2)P.rect(M,y,Rr-M,h,[.95,.97,.96]); nm.forEach((t,k)=>P.text(M+5,y+12.5+k*11,t,{size:8.5}));
+    P.text(M+cols[0][1]+5,y+12.5,l.exp?frDate(l.exp):'-',{size:8.5}); P.text(Rr-5,y+12.5,+l.ugVente?ugFmt(l.ugVente)+' %':'-',{size:8.5,bold:true,align:'right'}); y+=h; P.line(M,y,Rr,y); });
+  P.line(M,P.H-34,Rr,P.H-34); P.text(M,P.H-22,[(CFG.nom||''),R.length+' produit'+(R.length>1?'s':''),frDate(today())].filter(Boolean).join('  ·  '),{size:7.5,color:MUT});
+  return P.blob(); }
+async function listPdfDl(){ const R=dispoRows(); if(!R.length){toast('Aucun produit disponible.');return;} await saveBlob(listPDF(R),'produits-disponibles-'+today()+'.pdf','application/pdf',false); }
+function listSend(){ const R=dispoRows(); if(!R.length){toast('Aucun produit disponible.');return;}
+  const txt=`Produits disponibles au ${frDate(today())} : ${R.length} produit${R.length>1?'s':''}\n— ${CFG.nom||'WebMaster'}`;
+  sendClientsModal('Produits disponibles au '+frDate(today()),{blob:listPDF(R),name:'produits-disponibles-'+today()+'.pdf'},'Bonjour,\nVeuillez trouver ci-joint notre listing des produits disponibles au '+frDate(today())+' (DDP et UG).\nCordialement,\n'+(CFG.nom||'')); }
+/* ---------- envoi d'un PDF à une sélection de clients (e-mail / WhatsApp / Viber) ---------- */
+const cliEmails=c=>String(c.email||'').split(/[\s,;\/]+/).map(x=>x.trim()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
+function cliMobiles(c){ const out=[]; String((c.mobile||'')+' / '+(c.tel||'')).split(/[\/,;]+/).forEach(x=>{ let d=x.replace(/\D/g,''); if(d.startsWith('00213'))d=d.slice(5); else if(d.startsWith('213'))d=d.slice(3); if(d.length===9)d='0'+d; if(/^0[567]\d{8}$/.test(d)&&!out.includes(d))out.push(d); }); return out; }
+const fmtMob=d=>d.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})$/,'$1 $2 $3 $4');
+function sendClientsModal(title,file,text){
+  const CH={mail:{n:'E-mail',c:'#2C5FB8',has:c=>cliEmails(c).length},wa:{n:'WhatsApp',c:'#1F9D55',has:c=>cliMobiles(c).length},viber:{n:'Viber',c:'#7360F2',has:c=>cliMobiles(c).length}};
+  const SK='wm-envoi-sel'; let mem={}; try{ mem=JSON.parse(localStorage.getItem(SK))||{}; }catch(e){}
+  let ch=null, sel=new Set(), q='', step='pick', done=new Set(), saved=false;
+  const pdfFile=()=>new File([file.blob],file.name,{type:'application/pdf'});
+  const canFiles=()=>{ try{ return !!(navigator.canShare&&navigator.canShare({files:[pdfFile()]})); }catch(e){ return false; } };
+  const remember=()=>{ mem[ch]=[...sel]; try{ localStorage.setItem(SK,JSON.stringify(mem)); }catch(e){} };
+  const list=()=>S.clients.filter(c=>CH[ch].has(c)).sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+  const match=c=>{ const w=norm(q).trim().split(/\s+/).filter(Boolean); return !w.length||w.every(x=>norm([c.nom,c.wilaya,c.commune,c.email,c.mobile,c.tel].join(' ')).includes(x)); };
+  openModal(`<div class="sh"><h2>Envoyer le PDF</h2>${closeBtn}</div><p class="muted" style="font-size:13px;margin:0 0 10px">${esc(file.name)}</p><div id="sendbody"></div>`, s=>{
+    const body=$('#sendbody',s);
+    const draw=()=>{
+      if(!ch){ body.innerHTML=`<p style="font-size:14px;margin:0 0 10px">Comment voulez-vous l'envoyer ?</p><div style="display:grid;gap:10px">${Object.entries(CH).map(([k,o])=>`<button class="btn" data-ch="${k}" style="justify-content:space-between;border-color:${o.c};color:${o.c};font-weight:600;padding:14px 16px"><span>${o.n}</span><span class="muted" style="font-weight:400;font-size:12.5px">${S.clients.filter(o.has).length} client(s) ${k==='mail'?'avec e-mail':'avec mobile'}</span></button>`).join('')}</div>
+        <div class="acts"><button class="btn" data-close>Annuler</button></div>`; return; }
+      const L=list(), o=CH[ch];
+      if(step==='pick'){
+        if(!L.length){ body.innerHTML=`<div class="cmp bad" style="font-weight:400;margin:0 0 12px">Aucun client n'a ${ch==='mail'?'d\'adresse e-mail':'de numéro de mobile'}. Complétez les fiches dans Tiers → Clients.</div><div class="acts"><button class="btn" data-back>← Retour</button></div>`; return; }
+        const V=L.filter(match);
+        body.innerHTML=`<p style="margin:0 0 8px"><b style="color:${o.c}">${o.n}</b> · cochez les clients destinataires</p>
+          <input class="search" name="sq" placeholder="Nom, wilaya, commune…" value="${esc(q)}" style="margin-bottom:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button class="btn sm" data-all="1">Tout cocher</button><button class="btn sm" data-all="0">Tout décocher</button></div>
+          <div class="card" style="max-height:46vh;overflow:auto;padding:0"><ul class="rows">${V.map(c=>`<li class="row"><label style="display:flex;gap:10px;align-items:flex-start;width:100%;cursor:pointer"><input type="checkbox" data-cid="${c.id}" ${sel.has(c.id)?'checked':''} style="margin-top:4px;width:18px;height:18px;flex:none"><div class="m"><div class="t">${esc(c.nom)}</div><div class="s">${esc(ch==='mail'?cliEmails(c).join(', '):cliMobiles(c).map(fmtMob).join(' / '))}${cliLoc(c)?' · '+esc(cliLoc(c)):''}</div></div></label></li>`).join('')||'<li class="empty">Aucun résultat.</li>'}</ul></div>
+          <div class="err"></div>
+          <div class="acts"><button class="btn" data-back>← Retour</button><button class="btn primary" data-go2 style="background:${o.c};border-color:${o.c}">${ch==='mail'?'Envoyer':'Continuer'} (${sel.size})</button></div>`;
+        const qi=$('[name=sq]',body); qi.addEventListener('input',e=>{ q=e.target.value; const pos=e.target.selectionStart; draw(); const n=$('[name=sq]',body); n.focus(); try{n.setSelectionRange(pos,pos);}catch(x){} });
+        return; }
+      /* étape envoi WhatsApp / Viber : un client à la fois */
+      const C=L.filter(c=>sel.has(c.id));
+      body.innerHTML=`<div class="cmp" style="font-weight:400;margin:0 0 10px;font-size:13.5px"><b>Comment faire :</b> le PDF est enregistré dans <b>Téléchargements</b>. Pour chaque client, touchez <b>Ouvrir</b> : la discussion ${o.n} s'ouvre${ch==='wa'?' avec un message prêt':''}. Touchez 📎 → <b>Document</b> → <b>${esc(file.name)}</b> → Envoyer, puis revenez ici.</div>
+        ${canFiles()?`<button class="btn" data-sharepdf style="width:100%;margin-bottom:10px;white-space:normal;height:auto;line-height:1.3;padding:10px 12px">Ou partager le PDF directement (contacts enregistrés dans ${o.n})</button>`:''}
+        <div class="card" style="max-height:46vh;overflow:auto;padding:0"><ul class="rows">${C.map(c=>{ const m=cliMobiles(c)[0], i='213'+m.slice(1);
+          const href=ch==='wa'?`https://wa.me/${i}?text=${encodeURIComponent(text)}`:`viber://chat?number=%2B${i}`;
+          return `<li class="row"><div class="m"><div class="t">${done.has(c.id)?'✅ ':''}${esc(c.nom)}</div><div class="s">${fmtMob(m)}</div></div><div class="e"><a class="btn sm" data-open-ch="${c.id}" href="${href}" target="_blank" rel="noopener" style="border-color:${o.c};color:${o.c}">${done.has(c.id)?'Rouvrir':'Ouvrir'}</a></div></li>`; }).join('')}</ul></div>
+        <p class="muted" style="font-size:12.5px;margin:8px 0 0">${done.size} / ${C.length} ouvert(s)</p>
+        <div class="acts"><button class="btn" data-back>← Choix des clients</button><button class="btn" data-pdfagain>Réenregistrer le PDF</button><button class="btn primary" data-close>Terminé</button></div>`;
+    };
+    draw();
+    s.addEventListener('change',e=>{ const c=e.target.closest('[data-cid]'); if(!c)return; c.checked?sel.add(c.dataset.cid):sel.delete(c.dataset.cid); const b=$('[data-go2]',body); if(b)b.textContent=`${ch==='mail'?'Envoyer':'Continuer'} (${sel.size})`; });
+    s.addEventListener('click',async e=>{
+      const k=e.target.closest('[data-ch]'); if(k){ ch=k.dataset.ch; const ok=new Set(list().map(c=>c.id)); sel=new Set((mem[ch]||[]).filter(id=>ok.has(id))); q=''; step='pick'; draw(); return; }
+      if(e.target.closest('[data-back]')){ if(step!=='pick'){step='pick';} else { ch=null; } draw(); return; }
+      const a=e.target.closest('[data-all]'); if(a){ list().filter(match).forEach(c=>a.dataset.all==='1'?sel.add(c.id):sel.delete(c.id)); draw(); return; }
+      const oc=e.target.closest('[data-open-ch]'); if(oc){ done.add(oc.dataset.openCh); setTimeout(draw,400); return; }
+      if(e.target.closest('[data-pdfagain]')){ await saveBlob(file.blob,file.name,'application/pdf',false); return; }
+      if(e.target.closest('[data-sharepdf]')){ try{ await navigator.share({files:[pdfFile()],title,text}); }catch(er){ if(!er||er.name!=='AbortError')toast('Partage impossible.'); } return; }
+      if(!e.target.closest('[data-go2]'))return;
+      if(!sel.size){ $('.err',body).textContent='Cochez au moins un client.'; return; }
+      remember();
+      const C=list().filter(c=>sel.has(c.id));
+      if(ch==='mail'){
+        const adr=[...new Set(C.flatMap(cliEmails))];
+        let copied=false; try{ await navigator.clipboard.writeText(adr.join(', ')); copied=true; }catch(er){}
+        if(canFiles()){
+          body.innerHTML=`<div class="cmp" style="font-weight:400;margin:0 0 10px;font-size:13.5px">${copied?'<b>Les '+adr.length+' adresses sont copiées.</b>':'<b>Copiez les adresses ci-dessous.</b>'} Touchez <b>Ouvrir Gmail</b>, choisissez Gmail, puis faites un appui long dans le champ <b>Cci</b> (ou « À ») → <b>Coller</b>. Le PDF est déjà joint.</div>
+            <textarea readonly rows="4" style="width:100%;font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--sunk);color:var(--ink)">${esc(adr.join(', '))}</textarea>
+            <div class="acts"><button class="btn" data-back>← Retour</button><button class="btn primary" data-mailshare style="background:#2C5FB8;border-color:#2C5FB8">Ouvrir Gmail</button></div>`;
+          step='mail'; return; }
+        await saveBlob(file.blob,file.name,'application/pdf',false);
+        location.href=`mailto:?bcc=${encodeURIComponent(adr.join(','))}&subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`;
+        toast('Joignez le PDF depuis Téléchargements'); return; }
+      step='send'; if(!saved){ saved=true; await saveBlob(file.blob,file.name,'application/pdf',false); } draw();
+    });
+    s.addEventListener('click',async e=>{ if(!e.target.closest('[data-mailshare]'))return; try{ await navigator.share({files:[pdfFile()],title,text}); }catch(er){ if(!er||er.name!=='AbortError')toast('Partage impossible.'); } });
+  });
+}
+async function listXls(){ const R=dispoRows(); if(!R.length){toast('Aucun produit disponible.');return;}
+  const name='produits-disponibles-'+today()+'.xlsx';
+  const blob=xlsx([{name:'Produits disponibles',cols:[{h:'Produit',w:46},{h:'DDP',w:12},{h:'UGV %',w:10,t:'n'}],rows:R.map(({p,l})=>[p.nom,l.exp?frDate(l.exp):'',+l.ugVente?ugSnap(+l.ugVente):''])}]);
+  await saveBlob(blob,name,XLSX_T,false); }
 function lotsPdf(){
-  const R=[]; S.produits.slice().sort((a,b)=>(a.nom||'').localeCompare(b.nom||'')).forEach(p=>{ const L=(p.lots||[]).filter(l=>(+l.qte||0)>0).sort((a,b)=>(a.exp||'9999').localeCompare(b.exp||'9999')); if(L.length)R.push({p,l:L[0]}); });
+  const R=dispoRows();
   if(!R.length){toast('Aucun lot disponible.');return;}
   const rows=R.map(({p,l})=>`<tr><td>${esc(p.nom)}</td><td>${l.exp?frDate(l.exp):'—'}</td><td class="r">${+l.ugVente?ugFmt(l.ugVente)+' %':'—'}</td></tr>`).join('');
   const html=`<div class="d-page"><div class="d-top"><div><div class="d-co">${esc(CFG.nom||'')}</div><div class="d-mut">${cfgLines().slice(0,3).map(esc).join('<br>')}</div></div>
@@ -2643,7 +2785,7 @@ document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return;}
   const ch=e.target.closest('[data-chip]'); if(ch){const[k,v]=ch.dataset.chip.split(':');UI[k]=v;renderView();return;}
   const stb=e.target.closest('[data-stab]'); if(stb){UI.stockTab=stb.dataset.stab;renderView();return;}
-  const sg=e.target.closest('[data-seg]'); if(sg){UI.tiers=sg.dataset.seg;UI.tiersQ='';renderView();return;}
+  const sg=e.target.closest('[data-seg]'); if(sg){UI.tiers=UI.tiers===sg.dataset.seg?'':sg.dataset.seg;UI.tiersQ='';renderView();return;}
   if(e.target.closest('[data-close]')||e.target.id==='modal'){closeModal();return;}
   const cf=e.target.closest('[data-confirm]');
   if(cf&&cf.dataset.c2){ const sh=cf.closest('.sheet'), k=cf.dataset.confirm; let info={}; try{info=JSON.parse(cf.dataset.c2);}catch(x){}
@@ -2653,7 +2795,7 @@ document.addEventListener('click',e=>{
   const op=e.target.closest('[data-open]'); if(op){ const[t,id]=op.dataset.open.split(':');
     if(t==='produit'){const p=byId('produits',id);p&&produitModal(p);} if(t==='vente'){const v=byId('ventes',id);v&&venteModal(v);} if(t==='achat'){const a=byId('achats',id);a&&achatModal(a);}
     if(t==='client'){const c=byId('clients',id);c&&tiersModal('clients',c);} if(t==='fournisseur'){const f=byId('fournisseurs',id);f&&tiersModal('fournisseurs',f);} return; }
-  const a=e.target.closest('[data-act]'); if(a){ ({newProduit:()=>produitModal(),newVente:venteForm,newAchat:()=>achatForm(),importAchat:importModal,newTiers:()=>tiersModal(UI.tiers),loadDemo:()=>loadDemo(a),backup,excel:exportExcel,treso:()=>tresoModal(),lotsPdf,ugvExport,ugvImport,societe:()=>societeModal()})[a.dataset.act]?.(); }
+  const a=e.target.closest('[data-act]'); if(a){ ({newProduit:()=>produitModal(),newVente:venteForm,newAchat:()=>achatForm(),importAchat:importModal,newTiers:()=>tiersModal(UI.tiers),annuaire:()=>annuaireModal(),loadDemo:()=>loadDemo(a),backup,excel:exportExcel,treso:()=>tresoModal(),lotsPdf,listXls,listPdfDl,listSend,ugvExport,ugvImport,societe:()=>societeModal()})[a.dataset.act]?.(); }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden)closeModal();});
 document.addEventListener('click',e=>{ const c=e.target.closest('[data-tog]'); if(!c||e.target.closest('button,input,select,label,a'))return; const m=c.querySelector('.lc-more'); if(m){m.hidden=!m.hidden; c.classList.toggle('open',!m.hidden);} });
